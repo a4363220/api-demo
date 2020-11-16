@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>后台用户</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.6/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <!-- 得到子页面的执行状态 -->
+        <input type="hidden" id="handleStatus" value="1"/>
+
+        <fieldset class="table-search-fieldset">
+            <legend>搜索用户</legend>
+            <form class="layui-form layui-form-pane" id="queryFormId">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">编号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="adminUserCode" id="adminUserCode" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">姓名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="adminUserName" id="adminUserName" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">手机号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="adminUserPhone" id="adminUserPhone" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">类型</label>
+                        <div class="layui-input-inline">
+                            <select name="adminUserType" id="adminUserType">
+                                <option value="0">全部</option>
+                                <option value="1">超管</option>
+                                <option value="2">机构</option>
+                                <option value="3">代理</option>
+                                <option value="4">商户</option>
+                                <option value="5">财务主管</option>
+                                <option value="6">财务专员</option>
+                                <option value="7">业务主管</option>
+                                <option value="8">业务专员</option>
+                                <option value="9">运营主管</option>
+                                <option value="10">运营专员</option>
+                                <option value="11">客服主管</option>
+                                <option value="12">客服主管</option>
+                                <option value="13">技术主管</option>
+                                <option value="14">技术-后台开发</option>
+                                <option value="15">技术-app开发</option>
+                                <option value="16">技术-web开发</option>
+                                <option value="17">产品经理</option>
+                                <option value="18">产品专员</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-inline">
+                            <select name="adminUserState" id="adminUserState">
+                                <option value="0">全部</option>
+                                <option value="1">正常</option>
+                                <option value="2">超登锁定</option>
+                                <option value="3">禁止登录</option>
+                                <option value="4">离职</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md-offset5" style="margin-top:10px">
+                        <button type="button" class="layui-btn layui-btn-primary" lay-submit
+                                lay-filter="data-search-btn" id="queryClick"><i class="layui-icon"></i> 搜 索
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </fieldset>
+
+        <div class="layui-form layui-border-box layui-table-view" id="addBtnDiv">
+            <div class="layui-table-tool">
+                <div class="layui-table-tool-temp">
+                    <div class="layui-btn-container">
+                        <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" id="addClick">新增用户</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="layui-table" id="currentTableId" style="text-align: center;">
+        </table>
+
+        <div id="pageDiv"></div>
+    </div>
+</div>
+<script src="../../lib/layui-v2.5.6/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-custom-config.js" charset="utf-8"></script>
+<script>
+    layui.use(['jquery', 'form', 'customTable', 'customAjax', 'customAlert', 'customCommon', 'laypage'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            customTable = layui.customTable,
+            customAjax = layui.customAjax,
+            customAlert = layui.customAlert,
+            customCommon = layui.customCommon,
+            layPage = layui.laypage;
+        var yixing = layui.data('yixing');
+        // 判断当前用户是否有开设用户的权力
+        var judge = customCommon.getCreateAdminUserOption(yixing.adminUserType);
+        if (judge.length == 0) {
+            // 不显示
+            $("#addBtnDiv").hide();
+        }
+        query(1, 10);
+
+        function query(currentPageSize, pageSize) {
+            var queryData = "version=1.0.0&operCode=" + yixing.adminUserCode + "&currentPageSize=" + currentPageSize
+                + "&pageSize=" + pageSize + "&" + $("#queryFormId").serialize();
+            customAjax.ajax(customAjax.queryAdminUserByPageUrl, "get", queryData, function (result) {
+                // 检查返回数据
+                customAjax.verifyRespCode(result.respCode, result.respMsg);
+                if (result.respCode != "0000") {
+                    return;
+                }
+                // 清空当前表格
+                $("#currentTableId").empty();
+                // 定义表头,处理渲染
+                var thread = ["Id", "编号", "姓名", "邮箱", "身份证号码", "手机号", "类型", "状态", '创建时间', '操作'];
+                customTable.tableHeadApply("#currentTableId", thread);
+                // 定义表体,处理渲染
+                var tbody = $("<tbody></tbody>");
+                $.each(result.respData.pageData.dataList, function (index, item) {
+                    var tbodyTr = $("<tr></tr>");
+                    var adminUserId = $("<td>" + item.adminUserId + "</td>");
+                    var adminUserCode = $("<td>" + item.adminUserCode + "</td>");
+                    var adminUserName = $("<td>" + item.adminUserName + "</td>");
+                    var adminUserEmail = $("<td>" + item.adminUserEmail + "</td>");
+                    var adminUserIdentityCode = $("<td>" + item.adminUserIdentityCode + "</td>");
+                    var adminUserPhone = $("<td>" + item.adminUserPhone + "</td>");
+                    var adminUserType = $("<td>" + customCommon.judgeAdminUserTypeReturnTextValue(item.adminUserType) + "</td>");
+                    var adminUserState = $("<td>" + customCommon.judgeAdminUserStateReturnText(item.adminUserState) + "</td>");
+                    var adminUserAddDate = $("<td>" + item.adminUserAddDate + "</td>");
+                    var operTd = $("<td></td>");
+                    tbodyTr.append(adminUserId).append(adminUserCode).append(adminUserName)
+                        .append(adminUserEmail).append(adminUserIdentityCode).append(adminUserPhone)
+                        .append(adminUserType).append(adminUserState)
+                        .append(adminUserAddDate).append(operTd);
+                    tbody.append(tbodyTr);
+                });
+                $("#currentTableId").append(tbody);
+
+                //执行一个laypage实例
+                layPage.render({
+                    elem: 'pageDiv',// 分页的divId
+                    curr: result.respData.pageData.currentPageSize,//当前页
+                    count: result.respData.pageData.totalRowSize, //数据总数
+                    limit: result.respData.pageData.pageSize,// 每页显示数
+                    limits: [10],// 每页可选择查询条数
+                    groups: 3, // 连续出现的页码个数
+                    layout: ['prev', 'page', 'next', 'limit', 'count', 'skip'],
+                    jump: function (obj, first) {
+                        // 首次不执行
+                        if (!first) {
+                            var curr = obj.curr;// 当前页
+                            var limit = obj.limit;// 每页显示记录数
+                            query(curr, limit);
+                        }
+                    }
+                });
+
+            }, function (e) {
+                customAlert.error("请求异常");
+            });
+
+        }
+
+
+        // 查询点击
+        $(document).on("click", "#queryClick", function () {
+            query(1, 10);
+        });
+        // 点击新增
+        $(document).on("click", "#addClick", function () {
+            // 弹窗并将数据转递给下一个iframe
+            layer.open({
+                title: "新增用户",
+                type: 2,
+                shade: 0.2,
+                maxmin: true,
+                shadeClose: true,
+                area: ['100%', '100%'],
+                content: "user-add.html",
+                success: function (layero, index) {
+                    // 成功回调当前层dom，和当前层索引
+                    var body = layer.getChildFrame('body', index);
+                    //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    //var iframeWin = window[layero.find('iframe')[0]['name']];
+                }, end: function () {
+                    if ($("#handleStatus").val() == 0) {
+                        query(1, 10);
+                    }
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

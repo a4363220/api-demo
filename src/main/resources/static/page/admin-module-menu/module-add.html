@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>新增模块</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.6/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <form class="layui-form layui-form-pane" lay-filter="myForm" id="myFormId">
+        <input type="hidden" name="moduleId" id="moduleId"/>
+        <div class="layui-row">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">模块名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="moduleName" id="moduleName" placeholder="请输入模块名称"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">模块状态</label>
+                    <div class="layui-input-block">
+                        <select name="moduleState" id="moduleState">
+                            <option value="2">开启</option>
+                            <option value="1">关闭</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">模块图标</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="moduleIcon" id="moduleIcon" placeholder="请输入模块所用图标"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">打开地址</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="moduleUrl" id="moduleUrl" placeholder="请输入模块打开地址"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4 ">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">打开方式</label>
+                    <div class="layui-input-block ">
+                        <input type="radio" name="moduleOpenWay" value="_self" title="内部打开">
+                        <input type="radio" name="moduleOpenWay" value="_blank" title="外部打开">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md layui-col-md-offset4">
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" id="mySubmitButton">立即提交</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="../../lib/layui-v2.5.6/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-custom-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'jquery', 'customAjax', 'customAlert'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            customAjax = layui.customAjax,
+            customAlert = layui.customAlert;
+
+        $(document).on("click", "#mySubmitButton", function () {
+            var yixing = layui.data('yixing');
+            // 得到表单序列化的值
+            var formSerialize = $("#myFormId").serialize();
+            formSerialize += "&operCode=" + yixing.adminUserCode + "&version=1.0.0";
+
+            customAjax.ajax(customAjax.addAdminModuleUrl, "post", formSerialize, function (result) {
+                // 检查返回数据
+                customAjax.verifyRespCode(result.respCode, result.respMsg);
+                if (result.respCode != "0000") {
+                    return;
+                }
+                // 提示
+                customAlert.success(result.respMsg);
+                // 关闭
+                setTimeout(function () {
+                    var parent$ = window.parent.layui.jquery;
+                    // 设置执行状态为成功,让父页面刷新
+                    parent$("#handleStatus").val("0");
+
+                    var iframeIndex = parent.layer.getFrameIndex(window.name);
+                    parent.layer.close(iframeIndex);
+                }, 2000);
+
+            }, function (e) {
+                customAlert.error("请求异常");
+            });
+
+            return false;
+        });
+
+    });
+</script>
+</body>
+</html>

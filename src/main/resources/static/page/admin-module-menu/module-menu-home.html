@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>模块菜单管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.6/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<body>
+<span id="span" style="display:none"></span>
+<div class="layuimini-main">
+    <!-- 得到子页面的执行状态 -->
+    <input type="hidden" id="handleStatus" value="1"/>
+    <div class="layui-form layui-border-box layui-table-view">
+        <div class="layui-table-tool">
+            <div class="layui-table-tool-temp">
+                <div class="layui-btn-container" id="addBtnDiv">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table class="layui-table" id="currentTableId" style="text-align: center;">
+    </table>
+</div>
+<script src="../../lib/layui-v2.5.6/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-custom-config.js" charset="utf-8"></script>
+<script>
+    layui.use(['jquery', 'customTable', 'customAjax', 'customAlert'], function () {
+        var $ = layui.jquery,
+            customTable = layui.customTable,
+            customAjax = layui.customAjax,
+            customAlert = layui.customAlert;
+        var yixing = layui.data('yixing');
+        /**
+         *  @param 1 传递模块Id
+         *  @param 2 传递父栏目Id,当前页为父菜单,所以传递menuId,因为子菜单parentId=父菜单的menuId
+         *  @param 3 传递是否显示查询子菜单按钮,1表示显示,2不显示,当前页为父菜单,
+         *           复用肯定是查询子菜单所以不显示
+         *  @param 4 新增、变更、删除按钮,是操作父还是子 1:表示操作父,2:表示操作子
+         */
+        var data = $("#span").text().split(",");
+        // 创建新增按钮的文本值是新增父菜单还是子菜单
+        $("#addBtnDiv").append($("<button class=\"layui-btn layui-btn-normal layui-btn-sm data-add-btn\" id=\"addClick\">新增" + data[3] + "菜单</button>"));
+        // 打包查询数据
+        var queryData = "moduleId=" + data[0] + "&parentId=" + data[1] + "&version=1.0.0&operCode=" + yixing.adminUserCode;
+        // 执行查询方法
+        query();
+
+        function query() {
+            customAjax.ajax(customAjax.queryAdminModuleMenuUrl, "get", queryData, function (result) {
+                // 检查返回数据
+                customAjax.verifyRespCode(result.respCode, result.respMsg);
+                if (result.respCode != "0000") {
+                    return;
+                }
+                // 清空当前表格
+                $("#currentTableId").empty();
+                // 定义表头,处理渲染
+                var thread = ["菜单Id", "模块Id", "父栏目Id", "菜单名称", "菜单排序值", "菜单状态", "菜单图标", "菜单地址", "菜单打开方式", '创建时间', '操作'];
+                customTable.tableHeadApply("#currentTableId", thread);
+                // 定义表体,处理渲染
+                var tbody = $("<tbody></tbody>");
+                $.each(result.respData.adminMenuList, function (index, item) {
+                    var tbodyTr = $("<tr></tr>");
+                    var menuId = $("<td>" + item.menuId + "</td>");
+                    var moduleId = $("<td>" + item.moduleId + "</td>");
+                    var parentId = $("<td>" + item.parentId + "</td>");
+                    var menuName = $("<td>" + item.menuName + "</td>");
+                    var menuSort = $("<td>" + item.menuSort + "</td>");
+                    var menuStatus = $("<td>" + (item.menuStatus == 1 ? "停用" : "启用") + "</td>");
+                    var menuIcon = $("<td>" + item.menuIcon + "</td>");
+                    var menuUrl = $("<td>" + item.menuUrl + "</td>");
+                    var menuOpenWay = $("<td>" + (item.menuOpenWay == "_self" ? "内部打开" : "外部打开") + "</td>");
+                    var menuDate = $("<td>" + item.menuDate + "</td>");
+                    var operTd = $("<td></td>");
+                    var editBtn =
+                        $("<button class=\"layui-btn layui-btn-normal layui-btn-xs data-count-edit\" " +
+                            " id='editClick'>编辑" + data[3] + "菜单</button>");
+                    operTd.append(editBtn);
+                    // 判断是否显示查询子菜单按钮,因为当前页面被复用了,1表示显示,2表示不显示
+                    if (data[2] == 1) {
+                        var queryMenuBtn =
+                            $("<button type=\"button\" class=\"layui-btn layui-btn-primary layui-btn-xs\" id='queryModuleMenuClick'>" +
+                                "<i class=\"layui-icon\"></i>子菜单</button>");
+                        operTd.append(queryMenuBtn);
+                    }
+                    var delBtn =
+                        $("<button class=\"layui-btn layui-btn-xs layui-btn-danger " +
+                            "data-delete-btn\" id='delClick'>删除" + data[3] + "菜单</button>");
+                    operTd.append(delBtn);
+                    tbodyTr.append(menuId).append(moduleId).append(parentId)
+                        .append(menuName).append(menuSort).append(menuStatus)
+                        .append(menuIcon).append(menuUrl).append(menuOpenWay)
+                        .append(menuDate).append(operTd);
+                    tbody.append(tbodyTr);
+                });
+                $("#currentTableId").append(tbody);
+            }, function (e) {
+                customAlert.error("请求异常");
+            });
+        }
+
+        // 处理查询子菜单
+        $(document).on("click", "#queryModuleMenuClick", function () {
+            var td = $(this).parent().parent("tr").children("td");
+            /**
+             *  复用菜单页
+             *  @param 1 传递模块Id
+             *  @param 2 传递父栏目Id,当前页为父菜单,所以传递menuId,因为子菜单parentId=父菜单的menuId
+             *  @param 3 传递是否显示查询子菜单按钮,1表示显示,2不显示,当前页为父菜单,
+             *           复用肯定是查询子菜单所以不显示
+             *  @param 4 新增、变更、删除按钮,是操作父还是子 1:表示操作父,2:表示操作子
+             *           从当前父菜单页进入肯定是操作子菜单
+             */
+            var transData = [td.eq(1).text(), td.eq(0).text(), 2, "子"];
+            // 弹窗并将数据转递给下一个iframe
+            layer.open({
+                title: td.eq(3).text() + "-菜单管理",
+                type: 2,
+                shade: 0.2,
+                maxmin: true,
+                shadeClose: true,
+                area: ['100%', '100%'],
+                content: "module-menu-home.html",
+                success: function (layero, index) {
+                    // 成功回调当前层dom，和当前层索引
+                    var body = layer.getChildFrame('body', index);
+                    //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    //var iframeWin = window[layero.find('iframe')[0]['name']];
+                    body.find('span').text(transData);
+                }
+            });
+        });
+
+        // 处理新增菜单,父子共用
+        $(document).on("click", "#addClick", function () {
+            // 传递数据:模块Id和父栏目Id
+            var transData = [data[0], data[1]];
+            // 弹窗并将数据转递给下一个iframe
+            layer.open({
+                title: "新增" + data[3] + "菜单",
+                type: 2,
+                shade: 0.2,
+                maxmin: true,
+                shadeClose: true,
+                area: ['100%', '100%'],
+                content: "module-menu-add.html",
+                success: function (layero, index) {
+                    // 成功回调当前层dom，和当前层索引
+                    var body = layer.getChildFrame('body', index);
+                    //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    //var iframeWin = window[layero.find('iframe')[0]['name']];
+                    body.find('span').text(transData);
+                }, end: function () {
+                    if ($("#handleStatus").val() == 0) {
+                        query();
+                    }
+                }
+            });
+        });
+
+        // 处理编辑菜单,父子共用
+        $(document).on("click", "#editClick", function () {
+            // 传递数据
+            var td = $(this).parent().parent("tr").children("td");
+            var transData = [];
+            for (var i = 0; i < 9; i++) {
+                transData[i] = td.eq(i).text();
+            }
+            // 弹窗并将数据转递给下一个iframe
+            layer.open({
+                title: "编辑" + data[3] + "菜单",
+                type: 2,
+                shade: 0.2,
+                maxmin: true,
+                shadeClose: true,
+                area: ['100%', '100%'],
+                content: "module-menu-edit.html",
+                success: function (layero, index) {
+                    // 成功回调当前层dom，和当前层索引
+                    var body = layer.getChildFrame('body', index);
+                    //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    //var iframeWin = window[layero.find('iframe')[0]['name']];
+                    body.find('span').text(transData);
+                }, end: function () {
+                    if ($("#handleStatus").val() == 0) {
+                        query();
+                    }
+                }
+            });
+        });
+        // 删除菜单父子共用
+        $(document).on("click", "#delClick", function () {
+            var td = $(this).parent().parent("tr").children("td");
+            layer.confirm("确认删除 [" + td.eq(3).text() + "] 吗?", function (index) {
+                var transData = "menuId=" + td.eq(0).text()
+                    + "&version=1.0.0&operCode=" + yixing.adminUserCode;
+                customAjax.ajax(customAjax.deleteAdminMenuUrl, 'delete', transData, function (result) {
+                    // 检查返回数据
+                    customAjax.verifyRespCode(result.respCode, result.respMsg);
+                    if (result.respCode != "0000") {
+                        return;
+                    }
+                    // 提示
+                    customAlert.success(result.respMsg);
+                    // 关闭
+                    setTimeout(function () {
+                        query();
+                        layer.close(index);
+                    }, 2000);
+                }, function (e) {
+                    customAlert.error("请求异常");
+                });
+            });
+        });
+    });
+</script>
+</body>
+</html>

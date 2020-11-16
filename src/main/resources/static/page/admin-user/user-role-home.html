@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>功能角色授权</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.6/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<body>
+<table class="layui-table" id="currentTableId" style="text-align: center;">
+    <thead>
+    <tr>
+        <th>角色名称</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>机构</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="2" onclick="queryAuto(2);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>代理</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="3" onclick="queryAuto(3);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>商户</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="4" onclick="queryAuto(4);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>财务主管</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="5" onclick="queryAuto(5);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>财务专员</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="6" onclick="queryAuto(6);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>业务主管</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="7" onclick="queryAuto(7);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>业务专员</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="8" onclick="queryAuto(8);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>运营主管</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="9" onclick="queryAuto(9);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>运营专员</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="10" onclick="queryAuto(10);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>客服主管</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="11" onclick="queryAuto(11);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>客服专员</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="12" onclick="queryAuto(12);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>技术-后台开发</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="14" onclick="queryAuto(14);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>技术-app开发</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="15" onclick="queryAuto(15);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>技术-web开发</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="16" onclick="queryAuto(16);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>产品经理</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="17" onclick="queryAuto(17);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>产品专员</td>
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary" value="18" onclick="queryAuto(18);">
+                <i class="layui-icon layui-icon-auz"></i> 授权
+            </button>
+        </td>
+    </tr>
+
+    </tbody>
+</table>
+<script src="../../lib/layui-v2.5.6/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-custom-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    // 点击授权
+    function queryAuto(value) {
+        layui.use([ 'jquery', 'customAlert', 'customCommon'], function () {
+            var $ = layui.jquery,
+                customAlert = layui.customAlert,
+                customCommon = layui.customCommon;
+            var yixing = layui.data('yixing');
+            if (yixing.adminUserType != 1 && yixing.adminUserType != 13) {
+                customAlert.error("抱歉,您无此权限授权");
+                return;
+            }
+
+            // 弹窗并将数据转递给下一个iframe
+            layer.open({
+                title: "针对:[" + customCommon.judgeAdminUserTypeReturnTextValue(value) + "]类用户,授权功能菜单",
+                type: 2,
+                shade: 0.2,
+                maxmin: true,
+                shadeClose: true,
+                area: ['40%', '80%'],
+                content: "user-role-auto.html",
+                success: function (layero, index) {
+                    // 成功回调当前层dom，和当前层索引
+                    var body = layer.getChildFrame('body', index);
+                    body.find('span').text(value);
+                }
+            });
+        });
+    }
+</script>
+</body>
+</html>

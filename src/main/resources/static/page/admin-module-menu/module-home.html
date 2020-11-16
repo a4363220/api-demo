@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>功能模块中心</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.6/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <!-- 得到子页面的执行状态 -->
+        <input type="hidden" id="handleStatus" value="1"/>
+        <div class="layui-form layui-border-box layui-table-view">
+            <div class="layui-table-tool">
+                <div class="layui-table-tool-temp">
+                    <div class="layui-btn-container">
+                        <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" id="addClick">新增模块</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="layui-table" id="currentTableId" style="text-align: center;">
+        </table>
+    </div>
+</div>
+<script src="../../lib/layui-v2.5.6/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-custom-config.js" charset="utf-8"></script>
+<script>
+    layui.use(['jquery', 'customTable', 'customAjax', 'customAlert'], function () {
+        var $ = layui.jquery,
+            customTable = layui.customTable,
+            customAjax = layui.customAjax,
+            customAlert = layui.customAlert;
+        var yixing = layui.data('yixing');
+
+        query();
+
+        function query() {
+            // 查询模块
+            customAjax.ajax(customAjax.queryAdminModuleUrl, "get", "version=1.0.0&adminUserType=" + yixing.adminUserType,
+                function (result) {
+                    // 检查返回数据
+                    customAjax.verifyRespCode(result.respCode, result.respMsg);
+                    if (result.respCode != "0000") {
+                        return;
+                    }
+                    // 清空当前表格
+                    $("#currentTableId").empty();
+                    // 定义表头,处理渲染
+                    var thread = ["模块Id", "模块名称", "模块排序值", "模块状态", "模块图标", "模块打开地址", "模块打开方式", "模块创建时间", "操作"];
+                    customTable.tableHeadApply("#currentTableId", thread);
+
+                    // 定义表体,处理渲染
+                    var tbody = $("<tbody></tbody>");
+                    $.each(result.respData.adminMenuModuleList, function (index, item) {
+                        var tbodyTr = $("<tr></tr>");
+                        var moduleId = $("<td>" + item.moduleId + "</td>");
+                        var moduleName = $("<td>" + item.moduleName + "</td>");
+                        var moduleSort = $("<td>" + item.moduleSort + "</td>");
+                        var moduleState = $("<td>" + (item.moduleState == 1 ? "停用" : "启用") + "</td>");
+                        var moduleIcon = $("<td>" + item.moduleIcon + "</td>");
+                        var moduleUrl = $("<td>" + item.moduleUrl + "</td>");
+                        var moduleOpenWay = $("<td>" + (item.moduleOpenWay == "_self" ? "内部打开" : "外部打开") + "</td>");
+                        var moduleAddDate = $("<td>" + item.moduleAddDate + "</td>");
+                        var operTd = $("<td></td>");
+                        var editBtn =
+                            $("<button class=\"layui-btn layui-btn-normal layui-btn-xs data-count-edit\" " +
+                                " id='editClick'>编辑</button>");
+                        operTd.append(editBtn);
+                        var queryMenuBtn =
+                            $("<button type=\"button\" class=\"layui-btn layui-btn-primary layui-btn-xs\" id='queryModuleMenuClick'>" +
+                                "<i class=\"layui-icon\"></i>功能菜单</button>");
+                        operTd.append(queryMenuBtn);
+                        tbodyTr.append(moduleId).append(moduleName).append(moduleSort)
+                            .append(moduleState).append(moduleIcon).append(moduleUrl)
+                            .append(moduleOpenWay).append(moduleAddDate).append(operTd);
+                        tbody.append(tbodyTr);
+                    });
+                    $("#currentTableId").append(tbody);
+                }, function (e) {
+                    customAlert.error("请求异常");
+                    return;
+                });
+        }
+
+
+        // 处理变更
+        $(document).on("click", "#editClick", function () {
+            var td = $(this).parent().parent("tr").children("td");
+            var data = [];
+            for (var i = 0; i < 7; i++) {
+                data[i] = td.eq(i).text();
+            }
+            // 弹窗并将数据转递给下一个iframe
+            layer.open({
+                title: "编辑模块",
+                type: 2,
+                shade: 0.2,
+                maxmin: true,
+                shadeClose: true,
+                area: ['100%', '100%'],
+                content: "module-edit.html",
+                success: function (layero, index) {
+                    // 成功回调当前层dom，和当前层索引
+                    var body = layer.getChildFrame('body', index);
+                    //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    //var iframeWin = window[layero.find('iframe')[0]['name']];
+                    body.find('span').text(data);
+                }, end: function () {
+                    if ($("#handleStatus").val() == 0) {
+                        query();
+                        console.info("执行刷新")
+                    }
+                }
+            });
+        });
+
+        // 处理新增
+        $(document).on("click", "#addClick", function () {
+            // 弹窗并将数据转递给下一个iframe
+            layer.open({
+                title: "新增模块",
+                type: 2,
+                shade: 0.2,
+                maxmin: true,
+                shadeClose: true,
+                area: ['100%', '100%'],
+                content: "module-add.html",
+                success: function (layero, index) {
+                    // 成功回调当前层dom，和当前层索引
+                    var body = layer.getChildFrame('body', index);
+                    //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    //var iframeWin = window[layero.find('iframe')[0]['name']];
+                    body.find('span').text(data);
+                }, end: function () {
+                    if ($("#handleStatus").val() == 0) {
+                        query();
+                    }
+                }
+            });
+        });
+
+        // 处理查询菜单
+        $(document).on("click", "#queryModuleMenuClick", function () {
+            var td = $(this).parent().parent("tr").children("td");
+            /** 定义第三个自定义属性是否打开查询子菜单按钮
+             *  因为从模块页面进入，肯定首先是看到父菜单,当父菜单复用菜单页时
+             *  需将查询子菜单按钮隐藏,否则就无穷无尽了,1表示显示查询子菜单按钮,2表示不显示
+             *  @param 1 传递模块Id
+             *  @param 2 传递父栏目Id,从当前进入肯定是查询父菜单所以固定为0
+             *  @param 3 传递是否显示查询子菜单按钮,1表示显示,2不显示
+             *  @param 4 新增、变更、删除按钮,是操作父还是子 1:表示操作父,2:表示操作子
+             *           从当前页进入肯定是操作父菜单
+             */
+            var transData = [td.eq(0).text(), 0, 1, "父"];
+            // 弹窗并将数据转递给下一个iframe
+            layer.open({
+                title: td.eq(1).text() + "-菜单管理",
+                type: 2,
+                shade: 0.2,
+                maxmin: true,
+                shadeClose: true,
+                area: ['100%', '100%'],
+                content: "module-menu-home.html",
+                success: function (layero, index) {
+                    // 成功回调当前层dom，和当前层索引
+                    var body = layer.getChildFrame('body', index);
+                    //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    //var iframeWin = window[layero.find('iframe')[0]['name']];
+                    body.find('span').text(transData);
+                }
+            });
+        });
+
+    });
+</script>
+
+</body>
+</html>
