@@ -8,8 +8,6 @@ layui.define(['jquery', 'customAlert'], function (exports) {
     var $ = layui.jquery,
         customAlert = layui.customAlert;
     var apiUser = "http://127.0.0.1:10100/user";// 用户系统公共头部
-    // 查询菜单 get
-    var queryAdminMenuUrl = apiUser + "/admin/menumodule/queryAdminMenu.do";
     // 查询所有模块 get
     var queryAdminModuleUrl = apiUser + "/admin/menumodule/queryAdminModule.do";
     // 增加模块 post
@@ -24,6 +22,8 @@ layui.define(['jquery', 'customAlert'], function (exports) {
     var updateAdminMenuUrl = apiUser + "/admin/menumodule/updateAdminMenu.do";
     // 删除菜单 delete
     var deleteAdminMenuUrl = apiUser + "/admin/menumodule/deleteAdminMenu.do";
+    // 变更菜单排序 put
+    var updateMenuSortUrl = apiUser + "/admin/menumodule/updateMenuSort.do";
     // 查询用户分页 get
     var queryAdminUserByPageUrl = apiUser + "/admin/user/queryAdminUserByPage.do";
     // 新增用户 post
@@ -99,10 +99,11 @@ layui.define(['jquery', 'customAlert'], function (exports) {
                 customAlert.error(respMsg);
                 return;
             }
-        }, queryAdminMenuUrl: queryAdminMenuUrl, queryAdminModuleUrl: queryAdminModuleUrl,
+        }, queryAdminModuleUrl: queryAdminModuleUrl,
         addAdminModuleUrl: addAdminModuleUrl, updateAdminModuleUrl: updateAdminModuleUrl,
         queryAdminModuleMenuUrl: queryAdminModuleMenuUrl, addAdminMenuUrl: addAdminMenuUrl,
         updateAdminMenuUrl: updateAdminMenuUrl, deleteAdminMenuUrl: deleteAdminMenuUrl,
+        updateMenuSortUrl: updateMenuSortUrl,
         queryAdminUserByPageUrl: queryAdminUserByPageUrl, addAdminUserUrl: addAdminUserUrl,
         queryAdminMenuByAdminUserTypeUrl: queryAdminMenuByAdminUserTypeUrl,
         autoAdminUserTypeMenuUrl: autoAdminUserTypeMenuUrl
