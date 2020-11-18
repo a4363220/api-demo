@@ -28,10 +28,16 @@ layui.define(['jquery', 'customAlert'], function (exports) {
     var queryAdminUserByPageUrl = apiUser + "/admin/user/queryAdminUserByPage.do";
     // 新增用户 post
     var addAdminUserUrl = apiUser + "/admin/user/addAdminUser.do";
+    // 根据用户类型查询用户 get
+    var queryAdminUserByTypesUrl = apiUser + "/admin/user/queryAdminUserByTypes.do";
     // 根据用户类型查询菜单
     var queryAdminMenuByAdminUserTypeUrl = apiUser + "/admin/menumodule/queryAdminMenuByAdminUserType.do";
     // 授权用户菜单
     var autoAdminUserTypeMenuUrl = apiUser + "/admin/menumodule/autoAdminUserTypeMenu.do";
+    // 查询代理商分页
+    var queryAgentByPageUrl = apiUser + "/admin/agent/queryAgentByPage.do";
+    // 新增代理商
+    var addAgentUrl = apiUser + "/admin/agent/addAgent.do";
 
     var apiPay = "http://127.0.0.1:10200/pay";// 交易系统公共头部
     var success = "0000";// 响应码
@@ -85,7 +91,14 @@ layui.define(['jquery', 'customAlert'], function (exports) {
                     layui.data('yixing', {key: 'adminUserName', remove: true});
                     layui.data('yixing', {key: 'adminUserEmail', remove: true});
                     layui.data('yixing', {key: 'adminUserType', remove: true});
-                    window.location = 'login.html';// 跳出到登入页
+
+                    var curWwwPath = window.document.location.href;
+                    var pathName = window.document.location.pathname;
+
+                    var pos = curWwwPath.indexOf(pathName);
+                    var localhostPaht = curWwwPath.substring(0, pos);
+
+                    top.location.href = localhostPaht + '/login.html';// 跳出到登入页
                 }, 2000);
                 return;
             }
@@ -105,8 +118,10 @@ layui.define(['jquery', 'customAlert'], function (exports) {
         updateAdminMenuUrl: updateAdminMenuUrl, deleteAdminMenuUrl: deleteAdminMenuUrl,
         updateMenuSortUrl: updateMenuSortUrl,
         queryAdminUserByPageUrl: queryAdminUserByPageUrl, addAdminUserUrl: addAdminUserUrl,
+        queryAdminUserByTypesUrl: queryAdminUserByTypesUrl,
         queryAdminMenuByAdminUserTypeUrl: queryAdminMenuByAdminUserTypeUrl,
-        autoAdminUserTypeMenuUrl: autoAdminUserTypeMenuUrl
+        autoAdminUserTypeMenuUrl: autoAdminUserTypeMenuUrl,
+        queryAgentByPageUrl: queryAgentByPageUrl, addAgentUrl: addAgentUrl
     };
     // 输出接口
     exports('customAjax', obj);

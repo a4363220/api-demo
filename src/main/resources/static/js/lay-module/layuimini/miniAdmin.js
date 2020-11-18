@@ -34,7 +34,8 @@ layui.define(["jquery", "miniMenu", "element", "miniTab", "miniTheme"], function
             options.pageAnim = options.pageAnim || false;
             options.maxTabNum = options.maxTabNum || 20;
 
-            var queryAllData = "version=1.0.0&adminUserType=1";
+            var yixing = layui.data('yixing');
+            var queryAllData = "version=1.0.0&adminUserType="+yixing.adminUserType;
             // 执行查询菜单
             options.customAjax.ajax(options.customAjax.queryAdminMenuByAdminUserTypeUrl, "get", queryAllData, function (r) {
                 var respCode = r.respCode;

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>增加代理商</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.6/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+    </style>
+</head>
+<body>
+<form class="layui-form layui-form-pane" lay-filter="myForm" id="myFormId">
+    <div class="layui-row">
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4" style="margin-top: 100px">
+            <div class="layui-form-item">
+                <label class="layui-form-label">姓名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="atName" id="atName" placeholder="请输入代理商姓名"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4">
+            <div class="layui-form-item">
+                <label class="layui-form-label">手机号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="atPhone" id="atPhone" placeholder="手机号(登录账号)"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4">
+            <div class="layui-form-item">
+                <label class="layui-form-label">邮箱</label>
+                <div class="layui-input-block">
+                    <input type="text" name="atEmail" id="atEmail" placeholder="请输入代理商邮箱"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4">
+            <div class="layui-form-item">
+                <label class="layui-form-label">身份证号码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="atIdentityCode" id="atIdentityCode" placeholder="请输入代理商身份证号码"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-row" id="atSalesmanCodeDiv">
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4 ">
+            <div class="layui-form-item">
+                <label class="layui-form-label">业务员</label>
+                <div class="layui-input-block ">
+                    <select id="atSalesmanCode" name="atSalesmanCode">
+                        <option value="0">不指定业务员</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-row">
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md3 layui-col-md-offset4">
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" id="mySubmitButton">立即提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script src="../../lib/layui-v2.5.6/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-custom-config.js?v=2.0.0" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'jquery', 'customAjax', 'customAlert', 'customCommon'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            customAjax = layui.customAjax,
+            customAlert = layui.customAlert,
+            customCommon = layui.customCommon;
+        var yixing = layui.data('yixing');
+        // 得到当前用户可以开设的用户
+        var adminUserType = yixing.adminUserType;
+        if (adminUserType != 1 && adminUserType != 3 &&
+            adminUserType != 7 && adminUserType != 9 &&
+            adminUserType != 10 && adminUserType != 13) {
+            customAlert.error("无权限开设代理商");
+            // 关闭
+            setTimeout(function () {
+                var iframeIndex = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframeIndex);
+            }, 2000);
+        }
+
+        if (adminUserType != 3) {
+            // 内部人员开户
+            var transData = "version=1.0.0&adminUserTypeList=" + [7, 8];
+            customAjax.ajax(customAjax.queryAdminUserByTypesUrl, "get", transData, function (result) {
+                if (result.respCode == "0000") {
+                    // 渲染
+                    $.each(result.respData.adminUserList, function (index, item) {
+                        var typeText = customCommon.judgeAdminUserTypeReturnTextValue(item.adminUserType);
+                        var stateText = customCommon.judgeAdminUserStateReturnText(item.adminUserState);
+                        var groupShow = item.adminUserName + " [" + typeText + "]  " + stateText;
+                        var options =
+                            $("<option value='" + item.adminUserCode + "'>" + groupShow + "</option>");
+                        $("#atSalesmanCode").append(options);
+                    });
+                    form.render('select', 'myForm');
+                } else {
+                    customAjax.verifyRespCode(result.respCode, result.respMsg);
+                }
+            }, function (e) {
+                customAlert.error("请求异常");
+            });
+        } else {
+            $("#atSalesmanCodeDiv").hide();
+        }
+
+        // 点击立即提交
+        $(document).on("click", "#mySubmitButton", function () {
+            var transData = $("#myFormId").serialize() + "&version=1.0.0&operCode=" + yixing.adminUserCode
+                + "&operType=" + adminUserType;
+            // 如果为代理商提交
+            if (adminUserType == 3) {
+                transData += "&atAgentCode=" + yixing.adminUserCode;
+            }
+            customAjax.ajax(customAjax.addAgentUrl,"post",transData,function(result){
+                // 检查返回数据
+                customAjax.verifyRespCode(result.respCode, result.respMsg);
+                if (result.respCode != "0000") {
+                    return;
+                }
+                // 提示
+                customAlert.success(result.respMsg);
+            },function (e) {
+                customAlert.error("请求异常");
+            });
+            return false;
+        });
+
+
+    });
+</script>
+</body>
+</html>
